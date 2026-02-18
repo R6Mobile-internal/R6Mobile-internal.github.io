@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Find Your Operator – Quiz</title>
+  <meta name="description" content="Pick answers to discover your Rainbow Six operator." />
+  <style>
+    /* ----------------------------- CONFIG (colors) ----------------------------- */
+    :root{
+      --color-bg-overlay: rgba(3, 8, 20, 0.66);
+      --color-question: #ff7a00;         /* orange for questions */
+      --color-answer-bg: #13d6ff;        /* blue for answer boxes */
+      --color-answer-bg-hover: #13d6ff;
+      --color-answer-text: #e8f1ff;
+      --color-ui: #c9d7ff;
+      --color-accent: #13d6ff;           /* tiny accents/icons */
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --maxw: 980px;
+    }
+
+    /* ----------------------------- FONTS ----------------------------- */
+    /* Replace src: URLs via CONFIG injection below. We keep family names stable. */
+    @font-face {
+      font-family: "QuizQuestion";
+      src: url("{{QUESTION_OTF}}") format("opentype");
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "QuizAnswer";
+      src: url("{{ANSWER_OTF}}") format("opentype");
+      font-display: swap;
+    }
+
+    /* ----------------------------- BASE LAYOUT ----------------------------- */
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #0b1525;
+      color: #eaf2ff;
+    }
+    .bg {
+      position: fixed;
+      inset: 0;
+      background: center/cover no-repeat url("{{BACKGROUND_IMG}}");
+      filter: saturate(1.05) contrast(1.05) brightness(.9);
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(60% 60% at 70% 20%, rgba(0,0,0,0) 0%, rgba(0,0,0,.4) 50%, rgba(0,0,0,.75) 100%),
+                  linear-gradient(180deg, var(--color-bg-overlay), var(--color-bg-overlay));
+      pointer-events: none;
+    }
+    .app {
+      position: relative;
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 40px 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: var(--maxw);
+      backdrop-filter: blur(6px);
+      background: rgba(10, 18, 30, 0.58);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    /* ----------------------------- HEADER / PROGRESS ----------------------------- */
+    .topbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      color: var(--color-ui);
+      font: 600 14px/1.2 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+    .progress {
+      display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
+      width: 40%;
+      min-width: 220px;
+    }
+    .progress span { text-align: right; }
+    .bar {
+      height: 8px; border-radius: 999px; background: rgba(200, 220, 255, .15); overflow: hidden;
+    }
+    .bar > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #0ef, #46f); }
+
+    /* ----------------------------- QUESTION ----------------------------- */
+    .question {
+      font-family: "QuizQuestion", system-ui, Arial, sans-serif;
+      font-weight: 800;
+      font-size: clamp(22px, 4vw, 36px);
+      line-height: 1.15;
+      color: var(--color-question);
+      text-shadow: 0 2px 12px rgba(255, 122, 0, .25);
+      margin: 16px 0 18px;
+    }
+
+    /* ----------------------------- ANSWERS ----------------------------- */
+    .answers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 720px) {
+      .answers { grid-template-columns: 1fr; }
+    }
+    .answer {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: linear-gradient(180deg, rgba(14, 115, 255, .95), rgba(10, 96, 230, .95));
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--color-answer-text);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      cursor: pointer;
+      transition: transform .08s ease, background .15s ease, box-shadow .15s ease;
+      box-shadow: 0 4px 18px rgba(0,40,120,.35);
+      font-family: "QuizAnswer", system-ui, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+    .answer:hover, .answer:focus-visible { background: var(--color-answer-bg-hover); transform: translateY(-1px); outline: none; }
+    .answer:active { transform: translateY(0); }
+    .answer .badge {
+      min-width: 28px; height: 28px; border-radius: 8px;
+      display: grid; place-items: center;
+      background: rgba(255,255,255,.15);
+      font-weight: 900; color: #fff;
+    }
+
+    /* ----------------------------- NAV ----------------------------- */
+    .nav {
+      display: flex; justify-content: space-between; align-items: center; margin-top: 18px;
+      gap: 10px;
+    }
+    .ghost, .primary {
+      appearance: none; border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      color: var(--color-ui);
+      padding: 10px 14px; border-radius: 12px; cursor: pointer;
+      font: 600 14px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    .primary {
+      background: linear-gradient(90deg, #00c7ff, #008cff);
+      color: #021224; border: none;
+    }
+    .ghost:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ----------------------------- RESULT ----------------------------- */
+    .result {
+      display: grid; gap: 12px;
+    }
+    .op-title {
+      display: flex; align-items: baseline; gap: 10px;
+      font-family: "QuizQuestion", system-ui, Arial; color: #fff;
+    }
+    .op-title h2 {
+      margin: 0; font-size: clamp(26px, 5vw, 40px);
+      letter-spacing: .02em;
+    }
+    .op-title .pill {
+      font: 700 12px/1 system-ui, Arial; color: #021224;
+      background: linear-gradient(90deg, #ffe259, #ffa751);
+      padding: 6px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .08em;
+    }
+    .op-desc { color: var(--color-ui); max-width: 70ch; }
+    .video {
+      aspect-ratio: 16/9; width: 100%; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; overflow: hidden;
+      background: rgba(0,0,0,.6);
+    }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="overlay" aria-hidden="true"></div>
+
+  <main class="app">
+    <section class="card" role="region" aria-live="polite">
+      <div class="topbar">
+        <div class="brand">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.88L18.18 22 12 18.77 5.82 22 7 14.15l-5-4.88 6.91-1.01L12 2z" fill="currentColor" opacity=".7"/></svg>
+          <strong>Operator Quiz</strong>
+        </div>
+        <div class="progress" aria-label="progress">
+          <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+          <span id="stepText">Step 1</span>
+        </div>
+      </div>
+
+      <div id="stage"></div>
+
+      <div class="nav">
+        <button id="backBtn" class="ghost" disabled>← Back</button>
+        <div style="display:flex; gap:8px;">
+          <button id="restartBtn" class="ghost" hidden>Restart</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* =========================================================================
+       CONFIG: assets (swap URLs) & results (videos) & quiz tree
+       ========================================================================= */
+    const ASSETS = {
+      backgroundImage: "Background/R6M.png",          
+      fontQuestionOtf: "Fonts/Scout-BlackItalic.otf",
+      fontAnswerOtf: "Fonts/Scout-Regular.otf"     
+    };
+
+    const RESULTS = {
+      ASH: {
+        name: "ASH",
+        tagline: "Fast entry, faster decisions.",
+        videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - ASH.mp4",              // mp4 or YouTube link
+        poster: "assets/posters/ash.jpg",
+        blurb: "You’re a decisive breacher who values speed over subtlety. Give you a target and you’ll make an entrance."
+      },
+      TWITCH: {
+        name: "TWITCH",
+        tagline: "Tech first, problems second.",
+        videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - TWITCH.mp4",
+        poster: "assets/posters/twitch.jpg",
+        blurb: "You think two moves ahead and love finding clever solutions with the right tools."
+      },
+      YING: {
+        name: "YING",
+        tagline: "Momentum is your ally.",
+        videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - YING.mp4",
+        poster: "assets/posters/ying.jpg",
+        blurb: "You stay active and upbeat—when the operation ends, you’re already onto the next challenge."
+      },
+      THERMITE: {
+        name: "THERMITE",
+        tagline: "Methodical power.",
+        videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - THERMITE.mp4",
+        poster: "assets/posters/thermite.jpg",
+        blurb: "You value timing, planning, and opening win conditions for the whole squad."
+      },
+      CAVEIRA: {
+        name: "CAVEIRA",
+        tagline: "Silent… until it’s too late.",
+        videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - CAVEIRA.mp4",
+        poster: "assets/posters/caveira.jpg",
+        blurb: "You thrive on independence and mind games—stalking, isolating, and striking."
+      },
+      MUTE: {
+        name: "MUTE",
+        tagline: "Disrupt, deny, decide.",
+        videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - MUTE.mp4",
+        poster: "assets/posters/mute.jpg",
+        blurb: "You shut down enemy plans and keep comms clean—calm, disciplined, and effective."
+      },
+      JAEGER: {
+        name: "JÄGER",
+        tagline: "Controlled chaos, engineered.",
+        videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - JAGER.mp4",
+        poster: "assets/posters/jaeger.jpg",
+        blurb: "Energetic and inventive, you love turning chaos into calculated advantage."
+      },
+      KAPKAN: {
+        name: "KAPKAN",
+        tagline: "Let them come.",
+        videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - KAPKAN.mp4",
+        poster: "assets/posters/kapkan.jpg",
+        blurb: "You channel patience into punishing traps—when they overstep, you’re already there."
+      }
+    };
+
+    /* Branching tree based on your flow image.
+       You can change texts or result mappings anytime. */
+    const QUIZ_TREE = {
+      start: "q1",
+      nodes: {
+        q1: {
+          text: "Command assigns you a mission. What excites you most?",
+          options: [
+            { label: "A", text: "Leading the charge and breaking through defenses.", next: "q2A" },
+            { label: "B", text: "Secure and control enemy movement even before the assault.", next: "q2B" }
+          ]
+        },
+        q2A: {
+          text: "Things go wrong mid-operation. How do you react?",
+          options: [
+            { label: "A", text: "Part of the job. You’re hyper‑focused, calm.", next: "q3A" },
+            { label: "B", text: "You crack jokes and improvise creative solutions.", next: "q3B" }
+          ]
+        },
+        q3A: {
+          text: "Now, a reinforced wall blocks access to the bomb.",
+          options: [
+            { label: "A", text: "Blow it open fast. Subtlety is overrated.", result: "ASH" },
+            { label: "B", text: "I like science, planning, and perfect timing.", result: "TWITCH" } // (swap to THERMITE if you prefer)
+          ]
+        },
+        q3B: {
+          text: "Mission is finished. How do you relax?",
+          options: [
+            { label: "A", text: "You stay active: exploration, go-karting, basketball.", result: "YING" },
+            { label: "B", text: "COZY is your word: baking and quiet downtime.", result: "THERMITE" }
+          ]
+        },
+        q2B: {
+          text: "Enemies are pushing your site. Your strategy?",
+          options: [
+            { label: "A", text: "Build gadgets to stop their tech and lock down areas.", next: "q4A" },
+            { label: "B", text: "Let them in… then hunt them.", next: "q4B" }
+          ]
+        },
+        q4A: {
+          text: "Who’s your teammate of choice?",
+          options: [
+            { label: "A", text: "I prefer working alone.", result: "CAVEIRA" },
+            { label: "B", text: "A disciplined veteran who values efficiency over chatter.", result: "MUTE" },
+            { label: "C", text: "Someone energetic. I love chaotic vibes.", result: "JAEGER" }
+          ]
+        },
+        q4B: {
+          text: "If you weren’t an operator, what career would you choose?",
+          options: [
+            { label: "A", text: "Everything related to psychology—the human mind is interesting.", result: "CAVEIRA" },
+            { label: "B", text: "Karate teacher, to stay in action.", result: "KAPKAN" },
+            { label: "C", text: "A professional hacker.", result: "MUTE" }
+          ]
+        }
+      }
+    };
+
+    /* =========================================================================
+       Templating: inject font + background into <style> placeholders
+       ========================================================================= */
+    (function injectAssetsIntoCSS(){
+      const css = document.querySelector("style").textContent
+        .replace("{{BACKGROUND_IMG}}", ASSETS.backgroundImage)
+        .replace("{{QUESTION_OTF}}", ASSETS.fontQuestionOtf)
+        .replace("{{ANSWER_OTF}}", ASSETS.fontAnswerOtf);
+      document.querySelector("style").textContent = css;
+    })();
+
+    /* =========================================================================
+       App state
+       ========================================================================= */
+    const historyStack = []; // each item: { nodeId, choiceIndex }
+    let currentNodeId = QUIZ_TREE.start;
+
+    const stage = document.getElementById("stage");
+    const backBtn = document.getElementById("backBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const barFill = document.getElementById("barFill");
+    const stepText = document.getElementById("stepText");
+
+    function getDepthEstimate(nodeId){
+      // Estimate depth along current path by walking history + current node.
+      // Not perfect for branching, but gives a smooth progress feel (1..6).
+      const maxDepth = 6;
+      const currentDepth = Math.min(historyStack.length + 1, maxDepth);
+      return { current: currentDepth, max: maxDepth };
+    }
+
+    function renderQuestion(nodeId){
+      const node = QUIZ_TREE.nodes[nodeId];
+      if(!node){ console.error("Missing node", nodeId); return; }
+
+      stage.innerHTML = `
+        <div class="question" id="questionText">${node.text}</div>
+        <div class="answers" role="list" id="answers"></div>
+      `;
+      const answersEl = document.getElementById("answers");
+      node.options.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "answer";
+        btn.setAttribute("role", "listitem");
+        btn.innerHTML = `
+          <span class="badge">${opt.label || String.fromCharCode(65+i)}</span>
+          <span>${opt.text}</span>
+        `;
+        btn.addEventListener("click", () => onAnswer(nodeId, i));
+        answersEl.appendChild(btn);
+      });
+
+      // UI state
+      backBtn.disabled = historyStack.length === 0;
+      restartBtn.hidden = true;
+
+      // Progress bar
+      const { current, max } = getDepthEstimate(nodeId);
+      stepText.textContent = `Step ${current} of ${max}`;
+      barFill.style.width = `${(current/max)*100}%`;
+
+      // Keyboard: 1/2/3
+      window.onkeydown = (e) => {
+        if (e.key === "Backspace") { goBack(); }
+        const idx = ["1","2","3"].indexOf(e.key);
+        if (idx >= 0 && node.options[idx]) onAnswer(nodeId, idx);
+      };
+    }
+
+    function onAnswer(nodeId, choiceIndex){
+      const node = QUIZ_TREE.nodes[nodeId];
+      const choice = node.options[choiceIndex];
+
+      historyStack.push({ nodeId, choiceIndex });
+
+      if (choice.result){
+        renderResult(choice.result);
+      } else if (choice.next){
+        currentNodeId = choice.next;
+        renderQuestion(currentNodeId);
+      } else {
+        console.warn("Choice has neither next nor result.", choice);
+      }
+    }
+
+    function goBack(){
+      if(historyStack.length === 0) return;
+      historyStack.pop();
+      if(historyStack.length === 0) {
+        currentNodeId = QUIZ_TREE.start;
+      } else {
+        const last = historyStack[historyStack.length - 1];
+        currentNodeId = last.nodeId;
+      }
+      renderQuestion(currentNodeId);
+    }
+
+    function restart(){
+      historyStack.length = 0;
+      currentNodeId = QUIZ_TREE.start;
+      renderQuestion(currentNodeId);
+    }
+
+    function isYouTubeUrl(url){
+      return /youtube\.com\/watch\?v=|youtu\.be\//i.test(url);
+    }
+
+    function renderResult(resultKey){
+      const data = RESULTS[resultKey];
+      if(!data){ stage.textContent = "Unknown result."; return; }
+
+      // simple path summary (optional)
+      const picks = historyStack.map(h => {
+        const node = QUIZ_TREE.nodes[h.nodeId];
+        const opt = node.options[h.choiceIndex];
+        return `${opt.label || ""}. ${opt.text}`;
+      });
+
+      const videoHtml = isYouTubeUrl(data.videoUrl)
+        ? `<iframe class="video" src="${toYouTubeEmbed(data.videoUrl)}" title="${data.name} video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+        : `<video class="video" ${data.poster ? `poster="${data.poster}"`:""} controls preload="metadata" autoplay muted>
+             <source src="${data.videoUrl}" type="video/mp4">
+             Your browser does not support the video tag.
+           </video>`;
+
+      stage.innerHTML = `
+        <div class="result">
+          <div class="op-title">
+            <span class="pill">Your Operator</span>
+            <h2>${data.name}</h2>
+          </div>
+          <p class="op-desc"><strong>${data.tagline}</strong> — ${data.blurb}</p>
+          ${videoHtml}
+          <div class="actions">
+            <button class="primary" onclick="restart()">Try again</button>
+            <button class="ghost" onclick="copyResult()">Copy result</button>
+          </div>
+        </div>
+      `;
+
+      backBtn.disabled = false;
+      restartBtn.hidden = false;
+
+      // Progress full
+      stepText.textContent = `Result`;
+      barFill.style.width = "100%";
+
+      // keyboard
+      window.onkeydown = (e) => {
+        if (e.key.toLowerCase() === "r") restart();
+        if (e.key === "Backspace") goBack();
+      };
+    }
+
+    function toYouTubeEmbed(url){
+      const idMatch = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/i);
+      const id = idMatch ? idMatch[1] : "";
+      return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&autoplay=1`;
+    }
+
+    async function copyResult(){
+      const last = historyStack[historyStack.length - 1];
+      if(!last) return;
+      const text = document.querySelector(".op-title h2")?.textContent || "Your Operator";
+      try {
+        await navigator.clipboard.writeText(`My operator: ${text}`);
+        alert("Result copied to clipboard!");
+      } catch {
+        alert(text);
+      }
+    }
+
+    // Buttons
+    backBtn.addEventListener("click", goBack);
+    restartBtn.addEventListener("click", restart);
+
+    // Init
+    renderQuestion(currentNodeId);
+  </script>
+</body>
+</html>
+``
