@@ -44,15 +44,9 @@
       position: fixed;
       inset: 0;
       background: center/cover no-repeat url("{{BACKGROUND_IMG}}");
-      filter: saturate(1.05) contrast(1.05) brightness(.9);
+        filter: saturate(1.05) contrast(1.05) brightness(1);
     }
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(60% 60% at 70% 20%, rgba(0,0,0,0) 0%, rgba(0,0,0,.4) 50%, rgba(0,0,0,.75) 100%),
-                  linear-gradient(180deg, var(--color-bg-overlay), var(--color-bg-overlay));
-      pointer-events: none;
-    }
+      /* .overlay supprimé */
     .app {
       position: relative;
       min-height: 100%;
@@ -62,9 +56,10 @@
     }
     .card {
       width: 100%;
-      max-width: var(--maxw);
-      backdrop-filter: blur(6px);
-      background: rgba(10, 18, 30, 0.58);
+      max-width: 1200px;
+      padding: 40px 32px;
+        backdrop-filter: blur(6px);
+        background: rgba(10, 18, 30, 0.55);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
       box-shadow: var(--shadow);
@@ -86,6 +81,9 @@
       letter-spacing: .08em;
       text-transform: uppercase;
       color: var(--color-accent);
+      font-family: 'Scout Black', system-ui, Arial, sans-serif;
+      font-weight: 900;
+      font-size: clamp(18px, 3vw, 28px);
     }
     .progress {
       display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
@@ -104,7 +102,7 @@
       font-weight: 800;
       font-size: clamp(22px, 4vw, 36px);
       line-height: 1.15;
-      color: var(--color-question);
+      color: #fff;
       text-shadow: 0 2px 12px rgba(255, 122, 0, .25);
       margin: 16px 0 18px;
     }
@@ -120,7 +118,7 @@
     }
     .answer {
       display: flex; gap: 12px; align-items: flex-start;
-      background: linear-gradient(180deg, rgba(14, 115, 255, .95), rgba(10, 96, 230, .95));
+      background: #00AFBF;
       border: 1px solid rgba(255,255,255,.12);
       color: var(--color-answer-text);
       border-radius: var(--radius);
@@ -129,7 +127,7 @@
       transition: transform .08s ease, background .15s ease, box-shadow .15s ease;
       box-shadow: 0 4px 18px rgba(0,40,120,.35);
       font-family: "QuizAnswer", system-ui, Arial, sans-serif;
-      font-size: 16px;
+      font-size: 22px;
       line-height: 1.35;
     }
     .answer:hover, .answer:focus-visible { background: var(--color-answer-bg-hover); transform: translateY(-1px); outline: none; }
@@ -176,12 +174,67 @@
       background: linear-gradient(90deg, #ffe259, #ffa751);
       padding: 6px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .08em;
     }
-    .op-desc { color: var(--color-ui); max-width: 70ch; }
+    .op-desc { color: var(--color-ui); max-width: 70ch; font-family: "QuizAnswer", system-ui, Arial, sans-serif; font-size: 20px; }
     .video {
       aspect-ratio: 16/9; width: 100%; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; overflow: hidden;
       background: rgba(0,0,0,.6);
     }
     .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+    /* ----------------------------- MODAL ----------------------------- */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background: rgba(10, 18, 30, 0.95);
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      color: #eaf2ff;
+      text-align: center;
+      font-family: "QuizAnswer", system-ui, Arial, sans-serif;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover { color: #fff; }
+    .modal h3 {
+      margin-top: 0;
+      color: var(--color-accent);
+    }
+    .share-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .share-btn {
+      background: var(--color-answer-bg);
+      color: var(--color-answer-text);
+      border: none;
+      padding: 10px 15px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .share-btn:hover { background: var(--color-answer-bg-hover); }
   </style>
 </head>
 <body>
@@ -192,8 +245,8 @@
     <section class="card" role="region" aria-live="polite">
       <div class="topbar">
         <div class="brand">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.88L18.18 22 12 18.77 5.82 22 7 14.15l-5-4.88 6.91-1.01L12 2z" fill="currentColor" opacity=".7"/></svg>
-          <strong>Operator Quiz</strong>
+          <img src="Icon/R6M_stamp_logo.png" alt="R6M Logo" width="24" height="24" style="vertical-align:middle;" />
+          <strong>what operator are you?</strong>
         </div>
         <div class="progress" aria-label="progress">
           <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
@@ -212,6 +265,21 @@
     </section>
   </main>
 
+  <!-- Share Modal -->
+  <div id="shareModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeSharePopup()">&times;</span>
+      <h3>Share your operator!</h3>
+      <p>Challenge your friends to discover their Rainbow Six Mobile operator and see if they match yours!</p>
+      <div class="share-buttons">
+        <button class="share-btn mail" onclick="shareViaMail()">📧 Mail</button>
+        <button class="share-btn teams" onclick="shareViaTeams()">👥 Teams</button>
+        <button class="share-btn twitter" onclick="shareViaTwitter()">🐦</button>
+        <button class="share-btn facebook" onclick="shareViaFacebook()">📘 Facebook</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* =========================================================================
        CONFIG: assets (swap URLs) & results (videos) & quiz tree
@@ -227,56 +295,48 @@
         name: "ASH",
         tagline: "Fast entry, faster decisions.",
         videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - ASH.mp4",              // mp4 or YouTube link
-        poster: "assets/posters/ash.jpg",
         blurb: "You’re a decisive breacher who values speed over subtlety. Give you a target and you’ll make an entrance."
       },
       TWITCH: {
         name: "TWITCH",
         tagline: "Tech first, problems second.",
         videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - TWITCH.mp4",
-        poster: "assets/posters/twitch.jpg",
         blurb: "You think two moves ahead and love finding clever solutions with the right tools."
       },
       YING: {
         name: "YING",
         tagline: "Momentum is your ally.",
         videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - YING.mp4",
-        poster: "assets/posters/ying.jpg",
         blurb: "You stay active and upbeat—when the operation ends, you’re already onto the next challenge."
       },
       THERMITE: {
         name: "THERMITE",
         tagline: "Methodical power.",
         videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - THERMITE.mp4",
-        poster: "assets/posters/thermite.jpg",
         blurb: "You value timing, planning, and opening win conditions for the whole squad."
       },
       CAVEIRA: {
         name: "CAVEIRA",
         tagline: "Silent… until it’s too late.",
         videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - CAVEIRA.mp4",
-        poster: "assets/posters/caveira.jpg",
         blurb: "You thrive on independence and mind games—stalking, isolating, and striking."
       },
       MUTE: {
         name: "MUTE",
         tagline: "Disrupt, deny, decide.",
         videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - MUTE.mp4",
-        poster: "assets/posters/mute.jpg",
         blurb: "You shut down enemy plans and keep comms clean—calm, disciplined, and effective."
       },
       JAEGER: {
         name: "JÄGER",
         tagline: "Controlled chaos, engineered.",
         videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - JAGER.mp4",
-        poster: "assets/posters/jaeger.jpg",
         blurb: "Energetic and inventive, you love turning chaos into calculated advantage."
       },
       KAPKAN: {
         name: "KAPKAN",
         tagline: "Let them come.",
         videoUrl: "Operator assets/VID-OP-UNLOCK GADGET - KAPKAN.mp4",
-        poster: "assets/posters/kapkan.jpg",
         blurb: "You channel patience into punishing traps—when they overstep, you’re already there."
       }
     };
@@ -332,8 +392,8 @@
         q4B: {
           text: "If you weren’t an operator, what career would you choose?",
           options: [
-            { label: "A", text: "Everything related to psychology—the human mind is interesting.", result: "CAVEIRA" },
-            { label: "B", text: "Karate teacher, to stay in action.", result: "KAPKAN" },
+            { label: "A", text: "Everything related to psychology—the human mind is interesting.", result: "KAPKAN" },
+            { label: "B", text: "Karate teacher, to stay in action.", result: "CAVEIRA" },
             { label: "C", text: "A professional hacker.", result: "MUTE" }
           ]
         }
@@ -365,8 +425,8 @@
 
     function getDepthEstimate(nodeId){
       // Estimate depth along current path by walking history + current node.
-      // Not perfect for branching, but gives a smooth progress feel (1..6).
-      const maxDepth = 6;
+      // Not perfect for branching, but gives a smooth progress feel (1..4).
+      const maxDepth = 4;
       const currentDepth = Math.min(historyStack.length + 1, maxDepth);
       return { current: currentDepth, max: maxDepth };
     }
@@ -460,7 +520,7 @@
 
       const videoHtml = isYouTubeUrl(data.videoUrl)
         ? `<iframe class="video" src="${toYouTubeEmbed(data.videoUrl)}" title="${data.name} video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
-        : `<video class="video" ${data.poster ? `poster="${data.poster}"`:""} controls preload="metadata" autoplay muted>
+        : `<video class="video" controls preload="metadata" autoplay muted>
              <source src="${data.videoUrl}" type="video/mp4">
              Your browser does not support the video tag.
            </video>`;
@@ -468,14 +528,13 @@
       stage.innerHTML = `
         <div class="result">
           <div class="op-title">
-            <span class="pill">Your Operator</span>
             <h2>${data.name}</h2>
           </div>
           <p class="op-desc"><strong>${data.tagline}</strong> — ${data.blurb}</p>
           ${videoHtml}
           <div class="actions">
             <button class="primary" onclick="restart()">Try again</button>
-            <button class="ghost" onclick="copyResult()">Copy result</button>
+            <button class="ghost" onclick="openSharePopup()">Share result</button>
           </div>
         </div>
       `;
@@ -500,17 +559,68 @@
       return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&autoplay=1`;
     }
 
-    async function copyResult(){
-      const last = historyStack[historyStack.length - 1];
-      if(!last) return;
-      const text = document.querySelector(".op-title h2")?.textContent || "Your Operator";
-      try {
-        await navigator.clipboard.writeText(`My operator: ${text}`);
-        alert("Result copied to clipboard!");
-      } catch {
-        alert(text);
+    function openSharePopup(){
+      document.getElementById('shareModal').style.display = 'block';
+    }
+
+    function closeSharePopup(){
+      document.getElementById('shareModal').style.display = 'none';
+    }
+
+    function shareViaMail(){
+      const operator = document.querySelector(".op-title h2")?.textContent || "Your Operator";
+      const description = document.querySelector(".op-desc")?.textContent || "";
+      const subject = "Check out my Rainbow Six Mobile operator!";
+      const body = `I got ${operator}!\n${description}\n\nTake the quiz: ${window.location.href}`;
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      closeSharePopup();
+    }
+
+    function shareViaTeams(){
+      const operator = document.querySelector(".op-title h2")?.textContent || "Your Operator";
+      const description = document.querySelector(".op-desc")?.textContent || "";
+      const text = `I got ${operator}!\n${description}\nWhat's yours?`;
+      const url = window.location.href;
+      if (navigator.share) {
+        navigator.share({
+          title: 'My Rainbow Six Mobile Operator',
+          text: text,
+          url: url
+        }).then(() => {
+          closeSharePopup();
+        }).catch(() => {
+          // Fallback to mail
+          shareViaMail();
+        });
+      } else {
+        shareViaMail();
       }
     }
+
+    function shareViaTwitter(){
+      const operator = document.querySelector(".op-title h2")?.textContent || "Your Operator";
+      const description = document.querySelector(".op-desc")?.textContent || "";
+      const text = `I got ${operator}!\n${description}\nTake the quiz: ${window.location.href}`;
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+      closeSharePopup();
+    }
+
+    function shareViaFacebook(){
+      const operator = document.querySelector(".op-title h2")?.textContent || "Your Operator";
+      const description = document.querySelector(".op-desc")?.textContent || "";
+      const url = window.location.href;
+      const quote = `I got ${operator}!\n${description}\nWhat's yours?`;
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(quote)}`, '_blank');
+      closeSharePopup();
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('shareModal');
+      if (event.target == modal) {
+        closeSharePopup();
+      }
+    };
 
     // Buttons
     backBtn.addEventListener("click", goBack);
