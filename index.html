@@ -274,8 +274,6 @@
       <div class="share-buttons">
         <button class="share-btn mail" onclick="shareViaMail()">📧 Mail</button>
         <button class="share-btn teams" onclick="shareViaTeams()">👥 Teams</button>
-        <button class="share-btn twitter" onclick="shareViaTwitter()">🐦</button>
-        <button class="share-btn facebook" onclick="shareViaFacebook()">📘 Facebook</button>
       </div>
     </div>
   </div>
@@ -595,23 +593,6 @@
       } else {
         shareViaMail();
       }
-    }
-
-    function shareViaTwitter(){
-      const operator = document.querySelector(".op-title h2")?.textContent || "Your Operator";
-      const description = document.querySelector(".op-desc")?.textContent || "";
-      const text = `I got ${operator}!\n${description}\nTake the quiz: ${window.location.href}`;
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
-      closeSharePopup();
-    }
-
-    function shareViaFacebook(){
-      const operator = document.querySelector(".op-title h2")?.textContent || "Your Operator";
-      const description = document.querySelector(".op-desc")?.textContent || "";
-      const url = window.location.href;
-      const quote = `I got ${operator}!\n${description}\nWhat's yours?`;
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(quote)}`, '_blank');
-      closeSharePopup();
     }
 
     // Close modal when clicking outside
